@@ -142,6 +142,10 @@ public class InputHandler implements KeyListener{
 			break;
 		case KeyEvent.VK_N:
 			this.nIsPressed = true;
+			this.getLevelState().doLevelWon();
+			this.getLevelState().setLevel(this.getLevelState().getLevel()+1);
+			this.getLevelState().doGettingReady();
+			this.getLevelState().doStart();
 			break;
 		}
 		e.consume();
