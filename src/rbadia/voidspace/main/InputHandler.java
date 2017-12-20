@@ -19,14 +19,15 @@ public class InputHandler implements KeyListener{
 	private boolean sIsPressed;
 	private boolean iIsPressed;
 	private boolean nIsPressed;
+	private boolean musicOff = false;
 
 	private LevelState levelState;
-	
+
 	//private GameScreen gScreen;
 
 	public LevelState getLevelState() { return levelState; }
 	public void setLevelState(LevelState levelState) { this.levelState = levelState; }
-	
+
 
 	/**
 	 * Create a new input handler
@@ -94,7 +95,7 @@ public class InputHandler implements KeyListener{
 	public boolean isIPressed() {
 		return iIsPressed;
 	}
-	
+
 	public boolean isNPressed() {
 		return nIsPressed;
 	}
@@ -133,6 +134,14 @@ public class InputHandler implements KeyListener{
 			break;
 		case KeyEvent.VK_M:
 			this.mIsPressed= true;
+			if(musicOff) {
+				MegaManMain.audioClip.start();
+				musicOff = false;
+			}
+			else {
+				MegaManMain.audioClip.stop();
+				musicOff = true;
+			}
 			break;
 		case KeyEvent.VK_S:
 			this.sIsPressed = true;
@@ -144,7 +153,7 @@ public class InputHandler implements KeyListener{
 			this.nIsPressed = true;
 			this.getLevelState().doLevelWon();
 			this.getLevelState().setLevel(this.getLevelState().getLevel()+1);
-			this.getLevelState().doGettingReady();
+			//this.getLevelState().doGettingReady();
 			this.getLevelState().doStart();
 			break;
 		}
@@ -191,7 +200,7 @@ public class InputHandler implements KeyListener{
 			this.nIsPressed = false;
 			break;
 		}
-		
+
 		e.consume();
 	}
 
