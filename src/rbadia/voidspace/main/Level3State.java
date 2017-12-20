@@ -8,7 +8,7 @@ import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.SoundManager;
 
 
-public class Level3State extends Level2State{
+public class Level3State extends Level2StateNew{
 		
 	private static final long serialVersionUID = 6056436154088977036L;
 
