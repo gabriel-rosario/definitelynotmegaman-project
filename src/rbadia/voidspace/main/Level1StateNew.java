@@ -1,5 +1,6 @@
 package rbadia.voidspace.main;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -19,17 +20,21 @@ public class Level1StateNew extends Level1State {
 	private BufferedImage megaFireLImg;
 	private BufferedImage megaManLImg;
 	private BufferedImage megaFallLImg;
+	private BufferedImage background;
 	
 	protected boolean megamanFacingRight = true;
 
 	public Level1StateNew(int level, MainFrame frame, GameStatus status, LevelLogic gameLogic,
 			InputHandler inputHandler, GraphicsManager graphicsMan, SoundManager soundMan) {
 		super(level, frame, status, gameLogic, inputHandler, graphicsMan, soundMan);
-		// TODO Auto-generated constructor stub
+		
+		
+		
 		try {
 			this.megaManLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaMan3Left.png"));
 			this.megaFallLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaFallLeft.png"));
 			this.megaFireLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaFireLeft.png"));
+			this.background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/background.jpg"));
 			
 
 		} catch (Exception e) {
@@ -49,8 +54,10 @@ public class Level1StateNew extends Level1State {
 	}
 
 	public void drawMegaFireL (MegaMan megaMan, Graphics2D g2d, ImageObserver observer){
-		g2d.drawImage(megaFireLImg, megaMan.x, megaMan.y, observer);	
-	}
+		g2d.drawImage(megaFireLImg, megaMan.x, megaMan.y, observer);
+		}
+		
+
 	
 	@Override
 	protected void drawMegaMan() {
@@ -217,10 +224,46 @@ public class Level1StateNew extends Level1State {
 			megaMan.translate(megaMan.getSpeed(), 0);
 		}
 	}
+	public void updateScreen(){
+		Graphics2D g2d = getGraphics2D();
+		GameStatus status = this.getGameStatus();
 
+		// save original font - for later use
+		if(this.originalFont == null){
+			this.originalFont = g2d.getFont();
+			this.bigFont = originalFont;
+		}
+
+		clearScreen();
+		g2d.drawImage(background,null,0,0);
+		drawStars(50);
+		drawFloor();
+		drawPlatforms();
+		drawMegaMan();
+		drawAsteroid();
+		drawBullets();
+		drawBigBullets();
+		checkBullletAsteroidCollisions();
+		checkBigBulletAsteroidCollisions();
+		checkMegaManAsteroidCollisions();
+		checkAsteroidFloorCollisions();
+
+		// update asteroids destroyed (score) label  
+		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
+		// update lives left label
+		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
+		//update level label
+		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
+		
+		
+	}
+
+	
+//Skips Levels
 	@Override
 	public boolean isLevelWon() {
 		if (getInputHandler().isNPressed()) {
+			MegaManMain.audioClip.stop();
 			return true;
 		}
 		return super.isLevelWon();
