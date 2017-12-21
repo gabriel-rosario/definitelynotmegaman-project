@@ -218,6 +218,12 @@ public class Level1StateNew extends Level1State {
 		}
 	}
 
-
+	@Override
+	public boolean isLevelWon() {
+		if (getInputHandler().isNPressed()) {
+			return true;
+		}
+		return super.isLevelWon();
+	}
 
 }
