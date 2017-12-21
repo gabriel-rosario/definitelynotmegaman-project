@@ -16,7 +16,7 @@ import rbadia.voidspace.sounds.SoundManager;
 public class Level4State extends Level3State{
 	
 	protected int numPlatforms=8;
-
+	private BufferedImage level4Background;
 	private BufferedImage BossImg;
 	protected Boss boss;
 	
@@ -35,7 +35,8 @@ public class Level4State extends Level3State{
 		// TODO Auto-generated constructor stub
 		try {
 			this.BossImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/BigAsteroid.png"));
-			
+			this.level4Background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/level3.jpg"));
+
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "The graphic files are either corrupt or missing.",
@@ -56,6 +57,7 @@ public class Level4State extends Level3State{
 		}
 
 		clearScreen();
+		g2d.drawImage(level4Background,null,-50,-65);
 		drawStars(50);
 		drawFloor();
 		drawPlatforms();

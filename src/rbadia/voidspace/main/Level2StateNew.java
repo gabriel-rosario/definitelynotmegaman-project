@@ -1,18 +1,34 @@
 package rbadia.voidspace.main;
 
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import rbadia.voidspace.graphics.GraphicsManager;
 import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.SoundManager;
 
 public class Level2StateNew extends Level1StateNew {
-
+	private BufferedImage level2Background;
 	public Level2StateNew(int level, MainFrame frame, GameStatus status, LevelLogic gameLogic,
 			InputHandler inputHandler, GraphicsManager graphicsMan, SoundManager soundMan) {
 		super(level, frame, status, gameLogic, inputHandler, graphicsMan, soundMan);
 		// TODO Auto-generated constructor stub
+		try {
+			
+			this.level2Background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/level2.jpg"));
+			
+
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "The graphic files are either corrupt or missing.",
+					"VoidSpace - Fatal Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
+	
 	@Override
 	public void doStart() {	
 		super.doStart();
@@ -40,6 +56,41 @@ public class Level2StateNew extends Level1StateNew {
 			}
 		}	
 	}
+	
+	public void updateScreen(){
+		Graphics2D g2d = getGraphics2D();
+		GameStatus status = this.getGameStatus();
+
+		// save original font - for later use
+		if(this.originalFont == null){
+			this.originalFont = g2d.getFont();
+			this.bigFont = originalFont;
+		}
+
+		clearScreen();
+		g2d.drawImage(level2Background,null,0,0);
+		drawStars(50);
+		drawFloor();
+		drawPlatforms();
+		drawMegaMan();
+		drawAsteroid();
+		drawBullets();
+		drawBigBullets();
+		checkBullletAsteroidCollisions();
+		checkBigBulletAsteroidCollisions();
+		checkMegaManAsteroidCollisions();
+		checkAsteroidFloorCollisions();
+
+		// update asteroids destroyed (score) label  
+		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
+		// update lives left label
+		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
+		//update level label
+		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
+		
+		
+	}
+
 
 	@Override
 	public Platform[] newPlatforms(int n){
