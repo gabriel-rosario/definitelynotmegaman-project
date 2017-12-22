@@ -173,7 +173,7 @@ public class Level1StateNew extends Level1State {
 			}
 		}else {
 			if(bullet.getY() - bullet.getSpeed() >= 0){
-				bullet.translate(-bullet.getSpeed(), 0);
+				bullet.translate(-(bullet.getSpeed()), 0);
 				return false;
 			}
 			else{

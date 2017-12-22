@@ -62,7 +62,7 @@ public class MegaManMain {
 
 			LevelState levels[] = { level1State, level2State,level3State,level4State };
 			//Testing Purpose
-//			LevelState levels[] = {level4State };
+			//LevelState levels[] = {level4State };
 			
 			String outcome = "CONGRATS!! YOU WON!!";
 			for (LevelState nextLevel : levels) {

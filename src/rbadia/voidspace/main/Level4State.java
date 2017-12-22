@@ -1,14 +1,19 @@
 package rbadia.voidspace.main;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+
 import rbadia.voidspace.graphics.GraphicsManager;
+import rbadia.voidspace.model.BigBullet;
 import rbadia.voidspace.model.Boss;
+import rbadia.voidspace.model.Bullet;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.SoundManager;
@@ -19,11 +24,17 @@ public class Level4State extends Level3State{
 	private BufferedImage level4Background;
 	private BufferedImage boss;
 	private boolean isBossGoingUp = true;
-	int bossYPos = this.getHeight()/5;
+	private int bossYPos = this.getHeight()/5;
+	private int bulletBossCollision = 0;
+	private long lastBulletFire;
+	private final long  NEW_BOSS_BULLET_DELAY = 3000;
+	//private BufferedImage bossBullet;
+	protected BigBullet bossBullet;
+	
+	
+	
 
-	//public Boss getBoss() 					{ return boss; 		}
-
-
+	
 
 	/**
 	 * 
@@ -38,6 +49,7 @@ public class Level4State extends Level3State{
 		try {
 			this.boss = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/BOSS.gif"));
 			this.level4Background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/level3.jpg"));
+			//this.bossBullet = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/bigBullet.pngf"));
 
 
 		} catch (Exception e) {
@@ -49,28 +61,93 @@ public class Level4State extends Level3State{
 	}
 
 	public void drawBoss (Graphics2D g2d){
-		
+
 		if(isBossGoingUp) {
-		
-			if(bossYPos>=5) {
+
+			if(bossYPos>=1) {
 				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
 				bossYPos-=1;
-				
+
 			}else {
 				isBossGoingUp=false;
 			}
 		}
 		else {
-			if(bossYPos+boss.getHeight()<=this.getHeight()-5)
+			if(bossYPos+boss.getHeight()<=this.getHeight()-1)
 			{
 				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
 				bossYPos+=1;
-				
+
 			}else {
 				isBossGoingUp =true ;
 			}
 		}
 	}
+	
+	protected void drawBossBigBullets() {
+		Graphics2D g2d = getGraphics2D();
+	
+		for(int i=0; i<bigBullets.size(); i++){
+			BigBullet bigBullet = bigBullets.get(i);
+			getGraphicsManager().drawBigBullet(bigBullet, g2d, this);
+
+			boolean remove = this.moveBossBullet(bigBullet);
+			if(remove){
+				bigBullets.remove(i);
+				i--;
+					}
+		}
+	}
+	
+	public void fireBossBigBullet() {
+
+		long currentTime = System.currentTimeMillis();
+		if((currentTime - lastBulletFire) > NEW_BOSS_BULLET_DELAY) {
+
+			int xPos = this.getWidth()*4/5 - BigBullet.WIDTH / 2;
+			int yPos = (bossYPos+boss.getHeight())/2- BigBullet.HEIGHT + 4;
+			BigBullet  bigBullet = new BigBullet(xPos, yPos);
+			bigBullets.add(bigBullet);
+			this.getSoundManager().playBulletSound();
+			lastBulletFire = System.currentTimeMillis();
+		}
+	}
+	
+	public boolean moveBossBullet(BigBullet bigBullet){
+
+		if(bigBullet.getY() - bigBullet.getSpeed() >= 0)
+		{
+			bigBullet.translate(-(bigBullet.getSpeed()), 0);
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+
+	protected void checkBulletBossCollisons(Graphics2D g2d) {
+
+		GameStatus status = getGameStatus();
+		for(int i=0; i<bullets.size(); i++){
+			Bullet bullet = bullets.get(i);
+			if((bullet.x+bullet.width/2>=this.getWidth()*4/5)&&((bullet.y+bullet.height/2>=bossYPos)||(bullet.y+bullet.height/2<=bossYPos+boss.getHeight()))){
+				Rectangle bulletExplosion = new Rectangle(
+						bullet.x,
+						bullet.y,
+						bullet.getPixelsWide(),
+						bullet.getPixelsTall());
+				getGraphicsManager().drawAsteroidExplosion(bulletExplosion,g2d, this);
+				// increase Boss hit count
+				bulletBossCollision++;
+				randomPosition = rand.nextInt(10);
+				damage=0;
+				// remove bullet
+				bullets.remove(i);
+				break;
+			}
+		}
+	}
+	
 	@Override
 	public void updateScreen(){
 		Graphics2D g2d = getGraphics2D();
@@ -89,11 +166,13 @@ public class Level4State extends Level3State{
 		drawFloor();
 		drawPlatforms();
 		drawMegaMan();
-		//moveBoss();
 		drawAsteroid();
 		drawBullets();
 		drawBigBullets();
+		drawBossBigBullets();
+		fireBossBigBullet();
 		checkBullletAsteroidCollisions();
+		checkBulletBossCollisons(g2d);
 		checkBigBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
@@ -105,29 +184,6 @@ public class Level4State extends Level3State{
 		//update level label
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 	}
-
-
-
-
-	//	public void moveBoss () {
-	//		Graphics2D g2d = getGraphics2D();
-	//		GameStatus status = getGameStatus();
-	//		drawBoss(boss, g2d, this);
-	//	}
-	//boolean bossGoingUp = true;
-	//		if(bossGoingUp) {
-	//			if(boss.getY()+10 > this.getHeight()) {
-	//				boss.translate(0, boss.getDefaultSpeed());
-	//			}else {
-	//				bossGoingUp = false;
-	//			}
-	//		}else {
-	//			if(boss.getY()+boss.height+10<this.getHeight()) {
-	//				boss.translate(0, -boss.getDefaultSpeed());
-	//			}
-	//		}
-	//}
-
 
 	@Override
 	public Platform[] newPlatforms(int n){
@@ -143,6 +199,16 @@ public class Level4State extends Level3State{
 			}
 		}
 		return platforms;
+	}
+
+	@Override
+	public boolean isLevelWon() {
+		if (getInputHandler().isNPressed()) {
+			MegaManMain.audioClip.stop();
+			return true;
+		}
+		return bulletBossCollision >= 40;
+
 	}
 
 }
