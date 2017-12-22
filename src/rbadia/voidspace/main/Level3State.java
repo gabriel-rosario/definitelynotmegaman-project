@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 import rbadia.voidspace.graphics.GraphicsManager;
 import rbadia.voidspace.model.Asteroid;
+import rbadia.voidspace.model.BigBullet;
 import rbadia.voidspace.model.Bullet;
 import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.SoundManager;
@@ -19,6 +20,7 @@ public class Level3State extends Level2StateNew{
 
 	private BufferedImage level3Background;
 	protected int levelAsteroidsDestroyed = 0;
+	protected int randomPosition;
 
 	public Level3State(int level, MainFrame frame, GameStatus status, LevelLogic gameLogic, InputHandler inputHandler,
 			GraphicsManager graphicsMan, SoundManager soundMan) {
@@ -70,7 +72,7 @@ public class Level3State extends Level2StateNew{
 
 	}
 	
-	
+	@Override
 	protected void checkBullletAsteroidCollisions() {
 		GameStatus status = getGameStatus();
 		for(int i=0; i<bullets.size(); i++){
@@ -80,6 +82,7 @@ public class Level3State extends Level2StateNew{
 				status.setAsteroidsDestroyed(status.getAsteroidsDestroyed() + 100);
 				removeAsteroid(asteroid);
 				levelAsteroidsDestroyed++;
+				randomPosition = rand.nextInt(10);
 				damage=0;
 				// remove bullet
 				bullets.remove(i);
@@ -87,20 +90,54 @@ public class Level3State extends Level2StateNew{
 			}
 		}
 	}
+	
+	@Override
+	protected void checkBigBulletAsteroidCollisions() {
+		GameStatus status = getGameStatus();
+		for(int i=0; i<bigBullets.size(); i++){
+			BigBullet bigBullet = bigBullets.get(i);
+			if(asteroid.intersects(bigBullet)){
+				// increase asteroids destroyed count
+				status.setAsteroidsDestroyed(status.getAsteroidsDestroyed() + 100);
+				removeAsteroid(asteroid);
+				randomPosition = rand.nextInt(10);
+				damage=0;
+			}
+		}
+	}
+	
+	@Override
+	protected void checkMegaManAsteroidCollisions() {
+		GameStatus status = getGameStatus();
+		if(asteroid.intersects(megaMan)){
+			status.setLivesLeft(status.getLivesLeft() - 1);
+			removeAsteroid(asteroid);
+			randomPosition = rand.nextInt(10);
+		}
+	}
+	
+	protected void checkAsteroidFloorCollisions() {
+		for(int i=0; i<9; i++){
+			if(asteroid.intersects(floor[i])){
+				removeAsteroid(asteroid);
+				randomPosition = rand.nextInt(10);
+
+			}
+		}
+	}
 
 
-	int position = rand.nextInt();
 
 	@Override
 	protected void drawAsteroid() {
 		Graphics2D g2d = getGraphics2D();
 
-		switch(position % 2) {
+		switch(randomPosition % 2) {
 		case 0:
 			if((asteroid.getX() + asteroid.getPixelsWide() >  0)) {
 
 				//CHANGE THIS FOR ANGLE OF DESCENT, make this random
-				asteroid.translate(-asteroid.getSpeed(), asteroid.getSpeed());
+				asteroid.translate(rand.nextInt(3)* -asteroid.getSpeed(), rand.nextInt(3)*asteroid.getSpeed());
 
 				getGraphicsManager().drawAsteroid(asteroid, g2d, this);	
 			}
@@ -123,7 +160,7 @@ public class Level3State extends Level2StateNew{
 			if((asteroid.getX() + asteroid.getPixelsWide() < this.getWidth())) {
 
 				//CHANGE THIS FOR ANGLE OF DESCENT, make this random
-				asteroid.translate(asteroid.getSpeed(), asteroid.getSpeed());
+				asteroid.translate(rand.nextInt(3)*asteroid.getSpeed(), rand.nextInt(3)*asteroid.getSpeed());
 
 				getGraphicsManager().drawAsteroid(asteroid, g2d, this);	
 			}
