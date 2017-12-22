@@ -14,13 +14,14 @@ import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.SoundManager;
 
 public class Level4State extends Level3State{
-	
+
 	protected int numPlatforms=8;
 	private BufferedImage level4Background;
-	private BufferedImage BossImg;
-	protected Boss boss;
-	
-	public Boss getBoss() 					{ return boss; 		}
+	private BufferedImage boss;
+	private boolean isBossGoingUp = true;
+	int bossYPos = this.getHeight()/5;
+
+	//public Boss getBoss() 					{ return boss; 		}
 
 
 
@@ -32,9 +33,10 @@ public class Level4State extends Level3State{
 	public Level4State(int level, MainFrame frame, GameStatus status, LevelLogic gameLogic, InputHandler inputHandler,
 			GraphicsManager graphicsMan, SoundManager soundMan) {
 		super(level, frame, status, gameLogic, inputHandler, graphicsMan, soundMan);
+
 		// TODO Auto-generated constructor stub
 		try {
-			this.BossImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/BigAsteroid.png"));
+			this.boss = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/BOSS.gif"));
 			this.level4Background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/level3.jpg"));
 
 
@@ -43,6 +45,30 @@ public class Level4State extends Level3State{
 					"VoidSpace - Fatal Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
+		}
+	}
+
+	public void drawBoss (Graphics2D g2d){
+		
+		if(isBossGoingUp) {
+		
+			if(bossYPos>=5) {
+				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
+				bossYPos-=1;
+				
+			}else {
+				isBossGoingUp=false;
+			}
+		}
+		else {
+			if(bossYPos+boss.getHeight()<=this.getHeight()-5)
+			{
+				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
+				bossYPos+=1;
+				
+			}else {
+				isBossGoingUp =true ;
+			}
 		}
 	}
 	@Override
@@ -59,6 +85,7 @@ public class Level4State extends Level3State{
 		clearScreen();
 		g2d.drawImage(level4Background,null,-50,-65);
 		drawStars(50);
+		drawBoss(g2d);
 		drawFloor();
 		drawPlatforms();
 		drawMegaMan();
@@ -78,36 +105,34 @@ public class Level4State extends Level3State{
 		//update level label
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 	}
-	
-	public void drawBoss (Boss boss, Graphics2D g2d, ImageObserver observer){
-		g2d.drawImage(BossImg, boss.x, boss.y, observer);	
-	}
-	
-	
-//	public void moveBoss () {
-//		Graphics2D g2d = getGraphics2D();
-//		GameStatus status = getGameStatus();
-//		drawBoss(boss, g2d, this);
-//	}
-		//boolean bossGoingUp = true;
-//		if(bossGoingUp) {
-//			if(boss.getY()+10 > this.getHeight()) {
-//				boss.translate(0, boss.getDefaultSpeed());
-//			}else {
-//				bossGoingUp = false;
-//			}
-//		}else {
-//			if(boss.getY()+boss.height+10<this.getHeight()) {
-//				boss.translate(0, -boss.getDefaultSpeed());
-//			}
-//		}
+
+
+
+
+	//	public void moveBoss () {
+	//		Graphics2D g2d = getGraphics2D();
+	//		GameStatus status = getGameStatus();
+	//		drawBoss(boss, g2d, this);
+	//	}
+	//boolean bossGoingUp = true;
+	//		if(bossGoingUp) {
+	//			if(boss.getY()+10 > this.getHeight()) {
+	//				boss.translate(0, boss.getDefaultSpeed());
+	//			}else {
+	//				bossGoingUp = false;
+	//			}
+	//		}else {
+	//			if(boss.getY()+boss.height+10<this.getHeight()) {
+	//				boss.translate(0, -boss.getDefaultSpeed());
+	//			}
+	//		}
 	//}
 
-	
+
 	@Override
 	public Platform[] newPlatforms(int n){
 		platforms = new Platform[n];
-		
+
 		for(int i=0; i<n; i++){
 			this.platforms[i] = new Platform(0,0);
 			if(i<4)	platforms[i].setLocation(50+ i*50, getHeight()/2 + 140 - i*40);
