@@ -34,6 +34,7 @@ public class Level4State extends Level3State{
 	private BufferedImage bossBulletImage;
 	private boolean isBossGoingUp = true;
 	private int bossYPos = this.getHeight()/5;
+	private int bossXPos = this.getWidth()+10;
 	private int bulletBossCollision = 0;
 	private long lastBulletFire;
 	private final long  NEW_BOSS_BULLET_DELAY = 3000;
@@ -69,6 +70,46 @@ public class Level4State extends Level3State{
 			System.exit(-1);
 		}
 	}
+	
+	@Override
+	public void updateScreen(){
+		Graphics2D g2d = getGraphics2D();
+		GameStatus status = this.getGameStatus();
+
+		// save original font - for later use
+		if(this.originalFont == null){
+			this.originalFont = g2d.getFont();
+			this.bigFont = originalFont;
+		}
+
+		clearScreen();
+		g2d.drawImage(level4Background,null,-50,-65);
+		drawStars(50);
+		drawFloor();
+		drawBoss(g2d);
+		drawPlatforms();
+		drawMegaMan();
+		drawAsteroid();
+		drawBullets();
+		drawBigBullets();
+		drawBossBigBullets();
+		fireBossBigBullet();
+		fireBossBigBullet2();
+		checkBullletAsteroidCollisions();
+		checkBossBulletMegamanCollision(g2d);
+		checkBulletBossCollisons(g2d);
+		checkBigBulletAsteroidCollisions();
+		checkMegaManAsteroidCollisions();
+		checkAsteroidFloorCollisions();
+
+		// update asteroids destroyed (score) label  
+		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
+		// update lives left label
+		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
+		//update level label
+		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
+	}
+	
 	@Override
 	public void doGettingReady() {
 		MegaManMain.audioClip.close();
@@ -95,25 +136,24 @@ public class Level4State extends Level3State{
 	}
 	
 	public void drawBoss (Graphics2D g2d){
-
-		if(isBossGoingUp) {
-
-			if(bossYPos>=1) {
-				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
-				bossYPos-=1;
-
+			if(bossXPos>this.getWidth()/2) {
+				g2d.drawImage(boss,null, bossXPos,bossYPos);
+				bossXPos-=1;
 			}else {
-				isBossGoingUp=false;
-			}
-		}
-		else {
-			if(bossYPos+boss.getHeight()-50<=this.getHeight())
-			{
-				g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
-				bossYPos+=1;
-
-			}else {
-				isBossGoingUp =true ;
+				if(isBossGoingUp) {
+					if(bossYPos>=1) {
+						g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
+						bossYPos-=1;
+					}else {
+						isBossGoingUp=false;
+					}
+				}else {
+					if(bossYPos+boss.getHeight()-50<=this.getHeight()){
+						g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
+						bossYPos+=1;
+				}else {
+					isBossGoingUp =true ;
+				}
 			}
 		}
 	}
@@ -148,18 +188,20 @@ public class Level4State extends Level3State{
 	}
 	
 	public void fireBossBigBullet() {
-
 		long currentTime = System.currentTimeMillis();
-		if((currentTime - lastBulletFire) > NEW_BOSS_BULLET_DELAY) {
-
-			int xPos = this.getWidth()*4/5 - BossBullet.WIDTH / 2;
-			int yPos = (bossYPos+boss.getHeight())/2- BossBullet.HEIGHT + 4;
-			BossBullet  bossBullet = new BossBullet(xPos, yPos);
-			bossBullets.add(bossBullet);
-			this.getSoundManager().playBulletSound();
-			lastBulletFire = System.currentTimeMillis();
+		if(bossXPos==this.getWidth()/2) {
+			if((currentTime - lastBulletFire) > NEW_BOSS_BULLET_DELAY) {
+				int xPos = this.getWidth()*4/5 - BossBullet.WIDTH / 2;
+				int yPos = (bossYPos+boss.getHeight())/2- BossBullet.HEIGHT + 4;
+				BossBullet  bossBullet = new BossBullet(xPos, yPos);
+				bossBullets.add(bossBullet);
+				this.getSoundManager().playBulletSound();
+				lastBulletFire = System.currentTimeMillis();
+			}
 		}
+		
 	}
+	
 	public void fireBossBigBullet2() {
 
 		long currentTime = System.currentTimeMillis();
@@ -209,43 +251,30 @@ public class Level4State extends Level3State{
 		}
 	}
 	
-	@Override
-	public void updateScreen(){
-		Graphics2D g2d = getGraphics2D();
-		GameStatus status = this.getGameStatus();
+	protected void checkBossBulletMegamanCollision(Graphics2D g2d) {
 
-		// save original font - for later use
-		if(this.originalFont == null){
-			this.originalFont = g2d.getFont();
-			this.bigFont = originalFont;
+		GameStatus status = getGameStatus();
+		for(int i=0; i<bossBullets.size(); i++){
+			BossBullet bossBullet = bossBullets.get(i);
+			if(megaMan.intersects(bossBullet)){
+				Rectangle bulletExplosion = new Rectangle(
+						bossBullet.x,
+						bossBullet.y,
+						bossBullet.getPixelsWide(),
+						bossBullet.getPixelsTall());
+				getGraphicsManager().drawAsteroidExplosion(bulletExplosion,g2d, this);
+				// increase Boss hit count
+				status.setLivesLeft(status.getLivesLeft() - 1);
+				//randomPosition = rand.nextInt(10);
+				damage=0;
+				// remove bullet
+				bossBullets.remove(i);
+				break;
+			}
 		}
-
-		clearScreen();
-		g2d.drawImage(level4Background,null,-50,-65);
-		drawStars(50);
-		drawFloor();
-		drawBoss(g2d);
-		drawPlatforms();
-		drawMegaMan();
-		drawAsteroid();
-		drawBullets();
-		drawBigBullets();
-		drawBossBigBullets();
-		fireBossBigBullet();
-		fireBossBigBullet2();
-		checkBullletAsteroidCollisions();
-		checkBulletBossCollisons(g2d);
-		checkBigBulletAsteroidCollisions();
-		checkMegaManAsteroidCollisions();
-		checkAsteroidFloorCollisions();
-
-		// update asteroids destroyed (score) label  
-		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
-		// update lives left label
-		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
-		//update level label
-		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 	}
+	
+
 
 	@Override
 	public Platform[] newPlatforms(int n){
