@@ -4,9 +4,15 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JOptionPane;
 
 import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
@@ -30,7 +36,7 @@ public class Level4State extends Level3State{
 	private int bossYPos = this.getHeight()/5;
 	private int bulletBossCollision = 0;
 	private long lastBulletFire;
-	private final long  NEW_BOSS_BULLET_DELAY = 500;
+	private final long  NEW_BOSS_BULLET_DELAY = 3000;
 	protected BossBullet bossBullet;
 	protected ArrayList<BossBullet> bossBullets;
 	
@@ -61,6 +67,23 @@ public class Level4State extends Level3State{
 					"VoidSpace - Fatal Error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			System.exit(-1);
+		}
+	}
+	@Override
+	public void doGettingReady() {
+		MegaManMain.audioClip.close();
+		MegaManMain.audioFile = new File("audio/AlwaysWinter.wav");
+		try {
+			MegaManMain.audioStream = AudioSystem.getAudioInputStream(MegaManMain.audioFile);
+			MegaManMain.audioClip.open(MegaManMain.audioStream);
+			MegaManMain.audioClip.start();
+			MegaManMain.audioClip.loop(Clip.LOOP_CONTINUOUSLY);
+		} catch (UnsupportedAudioFileException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} catch (LineUnavailableException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
