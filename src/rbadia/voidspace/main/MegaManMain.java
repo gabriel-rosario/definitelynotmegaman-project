@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import rbadia.voidspace.graphics.GraphicsManager;
+import rbadia.voidspace.sounds.NewSoundManager;
 import rbadia.voidspace.sounds.SoundManager;
 
 /**
@@ -38,7 +39,7 @@ public class MegaManMain {
 		InputHandler inputHandler = new InputHandler(); 		// Keyboard listener
 		GraphicsManager graphicsMan = new GraphicsManager(); // Draws all graphics for game objects
 		SoundManager soundMan = new SoundManager();			// Loads and plays all sounds during the game
-
+		NewSoundManager newSoundMan = new NewSoundManager();
 		audioFile = new File("audio/GameOfThrones.wav");
 		try {
 			audioStream = AudioSystem.getAudioInputStream(audioFile);
@@ -57,7 +58,7 @@ public class MegaManMain {
 			LevelState level1State = new Level1StateNew(1, frame, gameStatus, gameLogic, inputHandler, graphicsMan, soundMan);
 			LevelState level2State = new Level2StateNew(2, frame, gameStatus, gameLogic, inputHandler, graphicsMan, soundMan);
 			LevelState level3State = new Level3State(3, frame, gameStatus, gameLogic, inputHandler, graphicsMan, soundMan);
-			LevelState level4State = new Level4State(4, frame, gameStatus, gameLogic, inputHandler, graphicsMan, soundMan);
+			LevelState level4State = new Level4State(4, frame, gameStatus, gameLogic, inputHandler, graphicsMan, soundMan,newSoundMan);
 
 
 			LevelState levels[] = { level1State, level2State,level3State,level4State };
