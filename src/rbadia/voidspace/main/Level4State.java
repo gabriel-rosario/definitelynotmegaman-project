@@ -103,6 +103,7 @@ public class Level4State extends Level3State{
 		drawPlatforms();
 		drawMegaMan();
 		drawAsteroid();
+		drawAsteroid2();
 		drawBullets();
 		drawBigBullets();
 		drawBossBigBullets();
@@ -116,6 +117,10 @@ public class Level4State extends Level3State{
 		checkBigBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
+		checkBullletAsteroid2Collisions();
+		checkBigBulletAsteroid2Collisions();
+		checkMegaManAsteroid2Collisions();
+		checkAsteroid2FloorCollisions();
 
 		// update asteroids destroyed (score) label  
 		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
@@ -361,11 +366,7 @@ public class Level4State extends Level3State{
 		for(int i=0; i<n; i++){
 			this.platforms[i] = new Platform(0,0);
 			if(i<4)	platforms[i].setLocation(50+ i*50, getHeight()/2 + 140 - i*40);
-			if(i>3){	
-				int k=7;
-				platforms[i].setLocation(50 + (k-i)*50, getHeight()/2 + 140 - i*40 );
-				k=k+2;
-			}
+			
 		}
 		return platforms;
 	}
@@ -376,7 +377,7 @@ public class Level4State extends Level3State{
 			MegaManMain.audioClip.stop();
 			return true;
 		}
-		return bulletBossCollision >= 40;
+		return bulletBossCollision >= 100;
 
 	}
 
