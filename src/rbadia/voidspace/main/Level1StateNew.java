@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -11,6 +12,7 @@ import javax.swing.JOptionPane;
 
 import rbadia.voidspace.graphics.GraphicsManager;
 import rbadia.voidspace.model.BigBullet;
+import rbadia.voidspace.model.BossBullet;
 import rbadia.voidspace.model.Bullet;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.sounds.SoundManager;
@@ -57,7 +59,42 @@ public class Level1StateNew extends Level1State {
 		g2d.drawImage(megaFireLImg, megaMan.x, megaMan.y, observer);
 		}
 		
+	@Override
+	public void doStart() {	
 
+		setStartState(START_STATE);
+		setCurrentState(getStartState());
+		// init game variables
+		bullets = new ArrayList<Bullet>();
+		bigBullets = new ArrayList<BigBullet>();
+		
+
+		//numPlatforms = new Platform[5];
+
+		GameStatus status = this.getGameStatus();
+
+		status.setGameOver(false);
+		status.setNewAsteroid(false);
+
+		// init the life and the asteroid
+		newMegaMan();
+		newFloor(this, 9);
+		newPlatforms(getNumPlatforms());
+		newAsteroid(this);
+
+		lastAsteroidTime = -NEW_ASTEROID_DELAY;
+		lastLifeTime = -NEW_MEGAMAN_DELAY;
+
+		bigFont = originalFont;
+		biggestFont = null;
+
+		// Display initial values for scores
+		getMainFrame().getDestroyedValueLabel().setForeground(Color.BLACK);
+		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
+		getMainFrame().getDestroyedValueLabel().setText(Long.toString(status.getAsteroidsDestroyed()));
+		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
+
+	}
 	
 	@Override
 	protected void drawMegaMan() {

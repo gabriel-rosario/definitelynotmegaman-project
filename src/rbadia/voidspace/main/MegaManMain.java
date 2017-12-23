@@ -39,7 +39,7 @@ public class MegaManMain {
 		GraphicsManager graphicsMan = new GraphicsManager(); // Draws all graphics for game objects
 		SoundManager soundMan = new SoundManager();			// Loads and plays all sounds during the game
 
-		audioFile = new File("audio/menuScreen.wav");
+		audioFile = new File("audio/GameOfThrones.wav");
 		try {
 			audioStream = AudioSystem.getAudioInputStream(audioFile);
 		} catch (UnsupportedAudioFileException e) {
