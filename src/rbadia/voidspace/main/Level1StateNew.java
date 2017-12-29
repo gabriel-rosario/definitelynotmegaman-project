@@ -14,30 +14,36 @@ import rbadia.voidspace.graphics.GraphicsManager;
 import rbadia.voidspace.model.BigBullet;
 import rbadia.voidspace.model.BossBullet;
 import rbadia.voidspace.model.Bullet;
+import rbadia.voidspace.model.LeftBullet;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.sounds.SoundManager;
 
 public class Level1StateNew extends Level1State {
-	
+
+	private BufferedImage leftBulletImg;
 	private BufferedImage megaFireLImg;
 	private BufferedImage megaManLImg;
 	private BufferedImage megaFallLImg;
 	private BufferedImage background;
-	
+	protected LeftBullet leftBullet;
+	protected ArrayList<LeftBullet> leftBullets;
+
 	protected boolean megamanFacingRight = true;
+	protected boolean megamanFacingLeft = true;
 
 	public Level1StateNew(int level, MainFrame frame, GameStatus status, LevelLogic gameLogic,
 			InputHandler inputHandler, GraphicsManager graphicsMan, SoundManager soundMan) {
 		super(level, frame, status, gameLogic, inputHandler, graphicsMan, soundMan);
-		
-		
-		
+		leftBullets = new ArrayList<LeftBullet>();
+
+
 		try {
 			this.megaManLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaMan3Left.png"));
 			this.megaFallLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaFallLeft.png"));
 			this.megaFireLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaFireLeft.png"));
 			this.background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/background.jpg"));
-			
+			this.leftBulletImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/bullet.png"));
+
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "The graphic files are either corrupt or missing.",
@@ -46,7 +52,12 @@ public class Level1StateNew extends Level1State {
 			System.exit(-1);
 		}
 	}
-	
+
+	//getters
+
+	public ArrayList<LeftBullet> getLeftBullets()		{ return leftBullets;   	}
+
+
 	public void drawMegaManL (MegaMan megaMan, Graphics2D g2d, ImageObserver observer){
 		g2d.drawImage(megaManLImg, megaMan.x, megaMan.y, observer);	
 	}
@@ -57,8 +68,8 @@ public class Level1StateNew extends Level1State {
 
 	public void drawMegaFireL (MegaMan megaMan, Graphics2D g2d, ImageObserver observer){
 		g2d.drawImage(megaFireLImg, megaMan.x, megaMan.y, observer);
-		}
-		
+	}
+
 	@Override
 	public void doStart() {	
 
@@ -67,7 +78,7 @@ public class Level1StateNew extends Level1State {
 		// init game variables
 		bullets = new ArrayList<Bullet>();
 		bigBullets = new ArrayList<BigBullet>();
-		
+
 
 		//numPlatforms = new Platform[5];
 
@@ -95,7 +106,7 @@ public class Level1StateNew extends Level1State {
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 
 	}
-	
+
 	@Override
 	protected void drawMegaMan() {
 		//draw one of three possible MegaMan poses according to situation
@@ -127,7 +138,7 @@ public class Level1StateNew extends Level1State {
 			}
 		}
 	}
-	
+
 	@Override
 	//Bullet fire pose
 	protected boolean Fire(){
@@ -159,18 +170,18 @@ public class Level1StateNew extends Level1State {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void fireBullet(){
 		if(megamanFacingRight) {
-		Bullet bullet = new Bullet(megaMan.x + megaMan.width - Bullet.WIDTH/2,
-				megaMan.y + megaMan.width/2 - Bullet.HEIGHT +2);
-		bullets.add(bullet);
-		this.getSoundManager().playBulletSound();
-		}else {
-			Bullet bullet = new Bullet(megaMan.x + Bullet.WIDTH/2,
+			Bullet bullet = new Bullet(megaMan.x + megaMan.width - Bullet.WIDTH/2,
 					megaMan.y + megaMan.width/2 - Bullet.HEIGHT +2);
 			bullets.add(bullet);
+			this.getSoundManager().playBulletSound();
+		}else {
+			LeftBullet leftBullet = new LeftBullet(megaMan.x + LeftBullet.WIDTH/2,
+					megaMan.y + megaMan.width/2 - LeftBullet.HEIGHT +2);
+			leftBullets.add(leftBullet);
 			this.getSoundManager().playBulletSound();
 		}
 	}
@@ -195,10 +206,9 @@ public class Level1StateNew extends Level1State {
 			bigBullets.add(bigBullet);
 			this.getSoundManager().playBulletSound();
 		}
-	
+
 	}
-	
-	@Override
+@Override
 	public boolean moveBullet(Bullet bullet){
 		if(megamanFacingRight) {
 			if(bullet.getY() - bullet.getSpeed() >= 0){
@@ -208,17 +218,23 @@ public class Level1StateNew extends Level1State {
 			else{
 				return true;
 			}
-		}else {
-			if(bullet.getY() - bullet.getSpeed() >= 0){
-				bullet.translate(-(bullet.getSpeed()), 0);
+		}
+		return megamanFacingLeft;
+}
+	
+	public boolean moveBulletLeft(LeftBullet leftBullet){
+		if(megamanFacingLeft) {
+			if(leftBullet.getY() - leftBullet.getSpeed() >= 0){
+				leftBullet.translate(-(leftBullet.getSpeed()), 0);
 				return false;
 			}
 			else{
 				return true;
 			}
 		}
-
+		return megamanFacingRight;
 	}
+
 
 	/** Move a "Power Shot" bullet once fired.
 	 * @param bigBullet the bullet to move
@@ -245,7 +261,7 @@ public class Level1StateNew extends Level1State {
 		}
 
 	}
-	
+
 	@Override
 	public void moveMegaManLeft(){
 		if(megaMan.getX() - megaMan.getSpeed() >= 0){
@@ -253,7 +269,7 @@ public class Level1StateNew extends Level1State {
 			megaMan.translate(-megaMan.getSpeed(), 0);
 		}
 	}
-	
+
 	@Override
 	public void moveMegaManRight(){
 		if(megaMan.getX() + megaMan.getSpeed() + megaMan.width < getWidth()){
@@ -279,8 +295,10 @@ public class Level1StateNew extends Level1State {
 		drawMegaMan();
 		drawAsteroid();
 		drawBullets();
+		drawLeftBullets();
 		drawBigBullets();
 		checkBullletAsteroidCollisions();
+		checkLeftBulletAsteroidCollisions();
 		checkBigBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
@@ -291,12 +309,43 @@ public class Level1StateNew extends Level1State {
 		getMainFrame().getLivesValueLabel().setText(Integer.toString(status.getLivesLeft()));
 		//update level label
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
-		
-		
+
+
+	}
+	public void drawLeftBullet(LeftBullet leftBullet, Graphics2D g2d, ImageObserver observer) {
+		g2d.drawImage(leftBulletImg, leftBullet.x, leftBullet.y, observer);
+	}
+	protected void drawLeftBullets() {
+		Graphics2D g2d = getGraphics2D();
+		for(int i=0; i<leftBullets.size(); i++){
+			LeftBullet leftBullet = leftBullets.get(i);
+			drawLeftBullet(leftBullet, g2d, this);
+
+			boolean remove =   this.moveBulletLeft(leftBullet);
+			if(remove){
+				leftBullets.remove(i);
+				i--;
+			}
+		}
+	}
+	protected void checkLeftBulletAsteroidCollisions() {
+		GameStatus status = getGameStatus();
+		for(int i=0; i<leftBullets.size(); i++){
+			LeftBullet leftBullet = leftBullets.get(i);
+			if(asteroid.intersects(leftBullet)){
+				// increase asteroids destroyed count
+				status.setAsteroidsDestroyed(status.getAsteroidsDestroyed() + 100);
+				removeAsteroid(asteroid);
+				levelAsteroidsDestroyed++;
+				damage=0;
+				// remove bullet
+				leftBullets.remove(i);
+				break;
+			}
+		}
 	}
 
-	
-//Skips Levels
+	//Skips Levels
 	@Override
 	public boolean isLevelWon() {
 		if (getInputHandler().isNPressed()) {
