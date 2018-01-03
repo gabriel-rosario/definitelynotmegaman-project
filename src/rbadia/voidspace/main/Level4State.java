@@ -1,5 +1,7 @@
 package rbadia.voidspace.main;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -107,6 +109,7 @@ public class Level4State extends Level3State{
 		drawBullets();
 		drawBigBullets();
 		drawBossBigBullets();
+		drawBossHealth(g2d);
 		fireBossBigBullet();
 		drawBossFireball();
 		fireFireballs();
@@ -131,6 +134,7 @@ public class Level4State extends Level3State{
 		//update level label
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 	}
+	
 
 	@Override
 	public void doGettingReady() {
@@ -355,6 +359,17 @@ public class Level4State extends Level3State{
 			}
 		}
 	}
+	
+	public void drawBossHealth(Graphics2D g2d) {
+		String bossHealthLabel = "Boss Health: ";
+		int bossHealthValue = 100 - bulletBossCollision;
+		Integer.toString(bossHealthValue);
+		
+		String bossHealthString = bossHealthLabel + bossHealthValue;
+		g2d.setFont(new Font("TimesRoman", Font.BOLD, 20));		
+		g2d.setPaint(Color.GREEN);
+		g2d.drawString(bossHealthString, this.getWidth()/2 - 65, 30);
+	}
 
 
 
@@ -379,7 +394,7 @@ public class Level4State extends Level3State{
 			MegaManMain.audioClip.stop();
 			return true;
 		}
-		return bulletBossCollision >= 100;
+		return bulletBossCollision > 100;
 
 	}
 
