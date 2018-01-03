@@ -12,7 +12,7 @@ public class LeftBullet extends GameObject {
 	
 	public LeftBullet(int xPos, int yPos) {
 		super(xPos, yPos, WIDTH, HEIGHT);
-		this.setSpeed(12);
+		this.setSpeed(-12);
 	}
 	public int getDefaultSpeed(){
 		return DEFAULT_SPEED;

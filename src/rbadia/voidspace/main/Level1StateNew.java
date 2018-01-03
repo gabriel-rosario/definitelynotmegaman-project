@@ -123,14 +123,15 @@ public class Level1StateNew extends Level1State {
 		}
 
 		if((Fire() == true || Fire2()== true) && (Gravity()==false)){
-			if(megamanFacingRight) {
-				getGraphicsManager().drawMegaFireR(megaMan, g2d, this);
-			}else {
-				this.drawMegaFireL(megaMan, g2d, this);
-			}
+			getGraphicsManager().drawMegaFireR(megaMan, g2d, this);
 		}
 
-		if((Gravity()==false) && (Fire()==false) && (Fire2()==false)){
+		if((FireLeft() == true || Fire2()== true) && (Gravity()==false)){
+
+			this.drawMegaFireL(megaMan, g2d, this);
+		}
+
+		if((Gravity()==false) && (Fire()==false) && (Fire2()==false)&&(FireLeft()==false)){
 			if(megamanFacingRight) {
 				getGraphicsManager().drawMegaMan(megaMan, g2d, this);
 			}else {
@@ -146,14 +147,27 @@ public class Level1StateNew extends Level1State {
 		List<Bullet> bullets = this.getBullets();
 		for(int i=0; i<bullets.size(); i++){
 			Bullet bullet = bullets.get(i);
+
 			if((bullet.getX() > megaMan.getX() + megaMan.getWidth()) && 
-					(bullet.getX() <= megaMan.getX() + megaMan.getWidth() + 60) || (bullet.getX() < megaMan.getX()) && 
-					(bullet.getX() >= megaMan.getX() - 60)){
+					(bullet.getX() <= megaMan.getX() + megaMan.getWidth() + 60)){
 				return true;
 			}
 		}
 		return false;
 	}
+	protected boolean FireLeft(){
+		MegaMan megaMan = this.getMegaMan();
+		List<LeftBullet> leftBullets = this.getLeftBullets();
+		for(int i=0; i<leftBullets.size(); i++){
+			LeftBullet leftBullet = leftBullets.get(i);
+
+			if((leftBullet.getX() < megaMan.getX()) && (leftBullet.getX() >= megaMan.getX() - 60)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	//BigBullet fire pose
 	@Override
@@ -208,32 +222,29 @@ public class Level1StateNew extends Level1State {
 		}
 
 	}
-@Override
+	@Override
 	public boolean moveBullet(Bullet bullet){
-		if(megamanFacingRight) {
-			if(bullet.getY() - bullet.getSpeed() >= 0){
-				bullet.translate(bullet.getSpeed(), 0);
-				return false;
-			}
-			else{
-				return true;
-			}
+
+		if(bullet.getY() - bullet.getSpeed() >= 0){
+			bullet.translate(bullet.getSpeed(), 0);
+			return false;
 		}
-		return megamanFacingLeft;
-}
-	
-	public boolean moveBulletLeft(LeftBullet leftBullet){
-		if(megamanFacingLeft) {
-			if(leftBullet.getY() - leftBullet.getSpeed() >= 0){
-				leftBullet.translate(-(leftBullet.getSpeed()), 0);
-				return false;
-			}
-			else{
-				return true;
-			}
+		else{
+			return true;
 		}
-		return megamanFacingRight;
 	}
+
+	public boolean moveBulletLeft(LeftBullet leftBullet){
+
+		if(leftBullet.getY() - leftBullet.getSpeed() >= 0){
+			leftBullet.translate(leftBullet.getSpeed(), 0);
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
+
 
 
 	/** Move a "Power Shot" bullet once fired.
