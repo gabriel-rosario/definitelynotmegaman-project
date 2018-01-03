@@ -24,6 +24,7 @@ import rbadia.voidspace.model.BigBullet;
 import rbadia.voidspace.model.Boss;
 import rbadia.voidspace.model.BossBullet;
 import rbadia.voidspace.model.Bullet;
+import rbadia.voidspace.model.FireWave;
 import rbadia.voidspace.model.Fireball;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.model.Platform;
@@ -38,6 +39,7 @@ public class Level4State extends Level3State{
 	private BufferedImage boss;
 	private BufferedImage bossBulletImage;
 	private BufferedImage fireballImage;
+	private BufferedImage fireWaveImage;
 	private BufferedImage fireExplosionImage;
 	protected Rectangle fireExplosion;
 	private boolean isBossGoingUp = true;
@@ -46,12 +48,16 @@ public class Level4State extends Level3State{
 	private int bulletBossCollision = 0;
 	private long lastBulletFire;
 	private long lastFireball;
-	private final long  NEW_BOSS_FIRE_DELAY = 10000;
+	private long lastFireWave;
+	private final long  NEW_BOSS_FIREWAVE_DELAY = 3000;
+	private final long  NEW_BOSS_FIRE_DELAY = 6000;
 	private final long  NEW_BOSS_BULLET_DELAY = 2000;
 	protected BossBullet bossBullet;
 	protected ArrayList<BossBullet> bossBullets;
 	protected Fireball fireball;
 	protected ArrayList<Fireball> fireballs;
+	protected FireWave fireWave;
+	protected ArrayList<FireWave> fireWaves;
 
 
 
@@ -69,6 +75,7 @@ public class Level4State extends Level3State{
 
 		bossBullets = new ArrayList<BossBullet>();
 		fireballs = new ArrayList<Fireball>();
+		fireWaves = new ArrayList<FireWave>();
 		this.setNewSoundManager(newSoundMan);
 
 		try {
@@ -77,6 +84,7 @@ public class Level4State extends Level3State{
 			this.bossBulletImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/bigBullet.png"));
 			this.fireballImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/fireball.png"));
 			this.fireExplosionImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/fireExplo.png"));
+			this.fireWaveImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/firewave.png"));
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "The graphic files are either corrupt or missing.",
@@ -109,13 +117,16 @@ public class Level4State extends Level3State{
 		drawBullets();
 		drawBigBullets();
 		drawBossBigBullets();
-		drawBossHealth(g2d);
 		fireBossBigBullet();
 		drawBossFireball();
 		fireFireballs();
+		fireFireWaves();
+		drawFireWave();
+		drawBossHealth(g2d);
 		drawLeftBullets();
 		checkBullletAsteroidCollisions();
 		checkBossBulletMegamanCollision(g2d);
+		checkFireWaveMegamanCollision(g2d);
 		checkFireBallMegamanCollision(g2d);
 		checkBulletBossCollisons(g2d);
 		checkBigBulletAsteroidCollisions();
@@ -134,7 +145,6 @@ public class Level4State extends Level3State{
 		//update level label
 		getMainFrame().getLevelValueLabel().setText(Long.toString(status.getLevel()));
 	}
-	
 
 	@Override
 	public void doGettingReady() {
@@ -157,6 +167,7 @@ public class Level4State extends Level3State{
 	//getters
 	public ArrayList<BossBullet> getBossBullets()		{ return bossBullets;   	}
 	public ArrayList<Fireball> getFireball()		{ return fireballs;   	}
+	public ArrayList<FireWave> getFireWave()		{ return fireWaves;   	}
 	public NewSoundManager getNewSoundManager() { return newSoundManager; }
 
 	//Setters
@@ -311,7 +322,7 @@ public class Level4State extends Level3State{
 			if((currentTime - lastFireball) > NEW_BOSS_FIRE_DELAY) {
 
 				int xPos = this.getWidth()*4/5 - Fireball.WIDTH / 2;
-				int yPos = (bossYPos+boss.getHeight())/2- BossBullet.HEIGHT + 4;
+				int yPos = (bossYPos+boss.getHeight())/2- Fireball.HEIGHT + 4;
 				Fireball  fireball = new Fireball(xPos, yPos);
 				fireballs.add(fireball);
 				this.getNewSoundManager().playFireballSound();
@@ -350,7 +361,7 @@ public class Level4State extends Level3State{
 						fireball.getPixelsTall());
 				drawFireBallExplosion(fireExplosion, g2d,this);
 				// increase Boss hit count
-				status.setLivesLeft(status.getLivesLeft() - 1);
+				status.setLivesLeft(0);
 				//randomPosition = rand.nextInt(10);
 				damage=0;
 				// remove bullet
@@ -359,19 +370,77 @@ public class Level4State extends Level3State{
 			}
 		}
 	}
-	
-	public void drawBossHealth(Graphics2D g2d) {
-		String bossHealthLabel = "Boss Health: ";
-		int bossHealthValue = 100 - bulletBossCollision;
-		Integer.toString(bossHealthValue);
+
+	//FIREWAVE
+		public void drawFireWave(FireWave fireWave, Graphics2D g2d, ImageObserver observer) {
+			g2d.drawImage(fireWaveImage, fireWave.x, fireWave.y, observer);
+		}
+
+		protected void drawFireWave() {
+			Graphics2D g2d = getGraphics2D();
+
+			for(int i=0; i<fireWaves.size(); i++){
+				FireWave fireWave = fireWaves.get(i);
+				this.drawFireWave(fireWave, g2d,null);
+
+				boolean remove = this.moveFireWave(fireWave);
+				if(remove){
+					fireWaves.remove(i);
+					i--;
+				}
+			}
+		}
+
+		public void fireFireWaves() {
+
+			long currentTime = System.currentTimeMillis();
+			if(bossXPos==this.getWidth()/2) {
+				if((currentTime - lastFireWave) > NEW_BOSS_FIREWAVE_DELAY) {
+
+					int xPos = this.getWidth()*4/5 - FireWave.WIDTH / 2;
+					int yPos = (this.getHeight()- FireWave.HEIGHT + 14);
+					FireWave  fireWave = new FireWave(xPos, yPos);
+					fireWaves.add(fireWave);
+					this.getNewSoundManager().playFireballSound();
+					lastFireWave = System.currentTimeMillis();
+				}
+			}
+		}
+
+		public boolean moveFireWave(FireWave fireWave){
+
+			if(fireWave.getY() - fireWave.getSpeed() >= 0)
+			{
+				fireWave.translate(-(fireWave.getSpeed()), 0);
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
 		
-		String bossHealthString = bossHealthLabel + bossHealthValue;
-		g2d.setFont(new Font("TimesRoman", Font.BOLD, 20));		
-		g2d.setPaint(Color.GREEN);
-		g2d.drawString(bossHealthString, this.getWidth()/2 - 65, 30);
-	}
+		protected void checkFireWaveMegamanCollision(Graphics2D g2d) {
 
-
+			GameStatus status = getGameStatus();
+			for(int i=0; i<fireWaves.size(); i++){
+				FireWave fireWave = fireWaves.get(i);
+				if(megaMan.intersects(fireWave)){
+					Rectangle fireExplosion = new Rectangle(
+							fireWave.x,
+							fireWave.y,
+							fireWave.getPixelsWide(),
+							fireWave.getPixelsTall());
+					drawFireBallExplosion(fireExplosion, g2d,this);
+					// increase Boss hit count
+					status.setLivesLeft(status.getLivesLeft() - 1);
+					//randomPosition = rand.nextInt(10);
+					damage=0;
+					// remove bullet
+					fireWaves.remove(i);
+					break;
+				}
+			}
+		}
 
 
 
@@ -397,5 +466,18 @@ public class Level4State extends Level3State{
 		return bulletBossCollision > 100;
 
 	}
+public void drawBossHealth(Graphics2D g2d) {
+		String bossHealthLabel = "Boss Health: ";
+		int bossHealthValue = 100 - bulletBossCollision;
+		Integer.toString(bossHealthValue);
+		
+		String bossHealthString = bossHealthLabel + bossHealthValue;
+		g2d.setFont(new Font("TimesRoman", Font.BOLD, 20));		
+		g2d.setPaint(Color.GREEN);
+		g2d.drawString(bossHealthString, this.getWidth()/2 - 65, 30);
+	}
+
+
+
 
 }
