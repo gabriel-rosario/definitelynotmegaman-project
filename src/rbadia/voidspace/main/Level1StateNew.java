@@ -20,6 +20,7 @@ import rbadia.voidspace.graphics.GraphicsManager;
 import rbadia.voidspace.model.BigBullet;
 import rbadia.voidspace.model.BossBullet;
 import rbadia.voidspace.model.Bullet;
+import rbadia.voidspace.model.LeftBigBullet;
 import rbadia.voidspace.model.LeftBullet;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.sounds.SoundManager;
@@ -31,6 +32,10 @@ public class Level1StateNew extends Level1State {
 	private BufferedImage megaManLImg;
 	private BufferedImage megaFallLImg;
 	private BufferedImage background;
+	private BufferedImage leftBigBulletImg;
+	
+	protected LeftBigBullet leftBigBullet;
+	protected ArrayList<LeftBigBullet> leftBigBullets;
 	protected LeftBullet leftBullet;
 	protected ArrayList<LeftBullet> leftBullets;
 
@@ -41,6 +46,7 @@ public class Level1StateNew extends Level1State {
 			InputHandler inputHandler, GraphicsManager graphicsMan, SoundManager soundMan) {
 		super(level, frame, status, gameLogic, inputHandler, graphicsMan, soundMan);
 		leftBullets = new ArrayList<LeftBullet>();
+		leftBigBullets = new ArrayList<LeftBigBullet>();
 
 
 		try {
@@ -49,6 +55,7 @@ public class Level1StateNew extends Level1State {
 			this.megaFireLImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/megaFireLeft.png"));
 			this.background = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/background.jpg"));
 			this.leftBulletImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/bullet.png"));
+			this.leftBigBulletImg = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/bigBullet.png"));
 
 
 		} catch (Exception e) {
@@ -62,6 +69,7 @@ public class Level1StateNew extends Level1State {
 	//getters
 
 	public ArrayList<LeftBullet> getLeftBullets()		{ return leftBullets;   	}
+	public ArrayList<LeftBigBullet> getLeftBigBullets() {return leftBigBullets;}
 
 
 	public void drawMegaManL (MegaMan megaMan, Graphics2D g2d, ImageObserver observer){
@@ -84,7 +92,7 @@ public class Level1StateNew extends Level1State {
 		LevelLogic.delay(2000);
 		//Music starts
 		MegaManMain.audioClip.close();
-		MegaManMain.audioFile = new File("audio/Reign.wav");
+		MegaManMain.audioFile = new File("audio/MegaManMain.wav");
 		try {
 			MegaManMain.audioStream = AudioSystem.getAudioInputStream(MegaManMain.audioFile);
 			MegaManMain.audioClip.open(MegaManMain.audioStream);
@@ -155,12 +163,11 @@ public class Level1StateNew extends Level1State {
 			getGraphicsManager().drawMegaFireR(megaMan, g2d, this);
 		}
 
-		if((FireLeft() == true || Fire2()== true) && (Gravity()==false)){
-
+		if((FireLeft() == true || Fire2Left()== true) && (Gravity()==false)){
 			this.drawMegaFireL(megaMan, g2d, this);
 		}
 
-		if((Gravity()==false) && (Fire()==false) && (Fire2()==false)&&(FireLeft()==false)){
+		if((Gravity()==false) && (Fire()==false) && (Fire2()==false)&&(FireLeft()==false)&&(Fire2Left()==false)){
 			if(megamanFacingRight) {
 				getGraphicsManager().drawMegaMan(megaMan, g2d, this);
 			}else {
@@ -205,14 +212,23 @@ public class Level1StateNew extends Level1State {
 		List<BigBullet> bigBullets = this.getBigBullets();
 		for(int i=0; i<bigBullets.size(); i++){
 			BigBullet bigBullet = bigBullets.get(i);
-			if((bigBullet.getX() > megaMan.getX() + megaMan.getWidth()) && 
-					(bigBullet.getX() <= megaMan.getX() + megaMan.getWidth() + 60) || (bigBullet.getX() < megaMan.getX()) && 
-					(bigBullet.getX() >= megaMan.getX() - 60)){
+			if((bigBullet.getX() > megaMan.getX() + megaMan.getWidth()) && (bigBullet.getX() <= megaMan.getX() + megaMan.getWidth() + 60)){
 				return true;
 			}
 		}
 		return false;
 	}
+	
+	protected boolean Fire2Left() {
+		MegaMan megaMan = this.getMegaMan();
+		List<LeftBigBullet> leftBigBullets = this.getLeftBigBullets();
+		for(int i=0; i<leftBigBullets.size(); i++){
+			LeftBigBullet leftBigBullet = leftBigBullets.get(i);
+			if((leftBigBullet.getX() < megaMan.getX()) && (leftBigBullet.getX() >= megaMan.getX() - 60)){
+				return true;
+			}
+		}
+		return false;	}
 
 	@Override
 	public void fireBullet(){
@@ -245,8 +261,9 @@ public class Level1StateNew extends Level1State {
 			//BigBullet bigBullet = new BigBullet(megaMan);
 			int xPos = megaMan.x + BigBullet.WIDTH / 2;
 			int yPos = megaMan.y + megaMan.width/2 - BigBullet.HEIGHT + 4;
-			BigBullet  bigBullet = new BigBullet(xPos, yPos);
-			bigBullets.add(bigBullet);
+			
+			LeftBigBullet  leftBigBullet = new LeftBigBullet(xPos, yPos);
+			leftBigBullets.add(leftBigBullet);
 			this.getSoundManager().playBulletSound();
 		}
 
@@ -282,7 +299,6 @@ public class Level1StateNew extends Level1State {
 	 */
 	@Override
 	public boolean moveBigBullet(BigBullet bigBullet){
-		if(megamanFacingRight) {
 			if(bigBullet.getY() - bigBullet.getSpeed() >= 0){
 				bigBullet.translate(bigBullet.getSpeed(), 0);
 				return false;
@@ -290,16 +306,16 @@ public class Level1StateNew extends Level1State {
 			else{
 				return true;
 			}
-		}else {
-			if(bigBullet.getY() - bigBullet.getSpeed() >= 0){
-				bigBullet.translate(-bigBullet.getSpeed(), 0);
-				return false;
-			}
-			else{
-				return true;
-			}
+	}
+	
+	public boolean moveBigBulletLeft(LeftBigBullet leftBigBullet) {
+		if(leftBigBullet.getY() - leftBigBullet.getSpeed() >= 0){
+			leftBigBullet.translate(leftBigBullet.getSpeed(), 0);
+			return false;
 		}
-
+		else{
+			return true;
+		}
 	}
 
 	@Override
@@ -337,9 +353,11 @@ public class Level1StateNew extends Level1State {
 		drawBullets();
 		drawLeftBullets();
 		drawBigBullets();
+		drawLeftBigBullets();
 		checkBullletAsteroidCollisions();
 		checkLeftBulletAsteroidCollisions();
 		checkBigBulletAsteroidCollisions();
+		checkLeftBigBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
 
@@ -368,6 +386,26 @@ public class Level1StateNew extends Level1State {
 			}
 		}
 	}
+	
+	public void drawLeftBigBullet(LeftBigBullet leftBigBullet, Graphics2D g2d, ImageObserver observer) {
+		g2d.drawImage(leftBigBulletImg, leftBigBullet.x, leftBigBullet.y, observer);
+	}
+	
+	protected void drawLeftBigBullets() {
+		Graphics2D g2d = getGraphics2D();
+		for(int i=0; i<leftBigBullets.size(); i++){
+			LeftBigBullet leftBigBullet = leftBigBullets.get(i);
+			drawLeftBigBullet(leftBigBullet, g2d, this);
+
+			boolean remove =   this.moveBigBulletLeft(leftBigBullet);
+			if(remove){
+				leftBigBullets.remove(i);
+				i--;
+			}
+		}
+	}
+	
+	
 	protected void checkLeftBulletAsteroidCollisions() {
 		GameStatus status = getGameStatus();
 		for(int i=0; i<leftBullets.size(); i++){
@@ -380,6 +418,24 @@ public class Level1StateNew extends Level1State {
 				damage=0;
 				// remove bullet
 				leftBullets.remove(i);
+				break;
+			}
+		}
+	}
+	
+	
+	protected void checkLeftBigBulletAsteroidCollisions() {
+		GameStatus status = getGameStatus();
+		for(int i=0; i<leftBigBullets.size(); i++){
+			LeftBigBullet leftBigBullet = leftBigBullets.get(i);
+			if(asteroid.intersects(leftBigBullet)){
+				// increase asteroids destroyed count
+				status.setAsteroidsDestroyed(status.getAsteroidsDestroyed() + 100);
+				removeAsteroid(asteroid);
+				levelAsteroidsDestroyed++;
+				damage=0;
+				// remove bullet
+				leftBigBullets.remove(i);
 				break;
 			}
 		}

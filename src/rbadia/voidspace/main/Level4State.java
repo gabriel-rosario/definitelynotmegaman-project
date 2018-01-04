@@ -137,6 +137,7 @@ public class Level4State extends Level3State{
 		drawFireWave();
 		drawBossHealth(g2d);
 		drawLeftBullets();
+		drawLeftBigBullets();
 		checkBullletAsteroidCollisions();
 		checkBossBulletMegamanCollision(g2d);
 		checkFireWaveMegamanCollision(g2d);
@@ -149,6 +150,7 @@ public class Level4State extends Level3State{
 		checkHeartMegamanCollision();
 		checkBullletAsteroid2Collisions();
 		checkBigBulletAsteroid2Collisions();
+		checkLeftBigBulletAsteroidCollisions();
 		checkMegaManAsteroid2Collisions();
 		checkAsteroid2FloorCollisions();
 
