@@ -82,7 +82,7 @@ public class Level1StateNew extends Level1State {
 		getGameLogic().drawGetReady();
 		repaint();
 		LevelLogic.delay(2000);
-		
+		//Music starts
 		MegaManMain.audioClip.close();
 		MegaManMain.audioFile = new File("audio/Reign.wav");
 		try {
@@ -394,5 +394,19 @@ public class Level1StateNew extends Level1State {
 		}
 		return super.isLevelWon();
 	}
-
+	@Override
+	public void doLevelWon(){
+		setCurrentState(LEVEL_WON);
+		getGameLogic().drawYouWin();
+		MegaManMain.audioClip.stop();
+		repaint();
+		LevelLogic.delay(5000);
+		
+		
+	}
+	@Override
+	public void doGameOver(){
+		this.getGameStatus().setGameOver(true);
+		MegaManMain.audioClip.stop();
+	}
 }
