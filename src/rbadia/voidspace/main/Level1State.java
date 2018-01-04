@@ -144,7 +144,7 @@ public class Level1State extends LevelState {
 		LevelLogic.delay(2000);
 		//Changes music from "menu music" to "ingame music"
 		MegaManMain.audioClip.close();
-		MegaManMain.audioFile = new File("audio/Reign.wav");
+		MegaManMain.audioFile = new File("audio/menuScreen.wav");
 		try {
 			MegaManMain.audioStream = AudioSystem.getAudioInputStream(MegaManMain.audioFile);
 			MegaManMain.audioClip.open(MegaManMain.audioStream);

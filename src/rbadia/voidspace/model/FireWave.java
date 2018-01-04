@@ -8,10 +8,10 @@ public class FireWave extends GameObject {
 	
 	public static final int DEFAULT_SPEED = -1;
 	public static final  int WIDTH = 100;
-	public static final int HEIGHT = 100;
+	public static final int HEIGHT = 80;
 	
 	public FireWave(int xPos, int yPos) {
-		super(xPos, yPos, WIDTH, HEIGHT);
+		super(xPos, yPos+10, WIDTH, HEIGHT);
 		this.setSpeed(6);
 	}
 	public int getDefaultSpeed(){

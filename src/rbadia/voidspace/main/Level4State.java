@@ -26,6 +26,7 @@ import rbadia.voidspace.model.BossBullet;
 import rbadia.voidspace.model.Bullet;
 import rbadia.voidspace.model.FireWave;
 import rbadia.voidspace.model.Fireball;
+import rbadia.voidspace.model.Heart;
 import rbadia.voidspace.model.MegaMan;
 import rbadia.voidspace.model.Platform;
 import rbadia.voidspace.sounds.NewSoundManager;
@@ -35,34 +36,42 @@ public class Level4State extends Level3State{
 
 	private NewSoundManager newSoundManager;
 	protected int numPlatforms=8;
+	
 	private BufferedImage level4Background;
 	private BufferedImage boss;
 	private BufferedImage bossBulletImage;
 	private BufferedImage fireballImage;
 	private BufferedImage fireWaveImage;
 	private BufferedImage fireExplosionImage;
+	private BufferedImage heartImage;
+	
 	protected Rectangle fireExplosion;
+	
 	private boolean isBossGoingUp = true;
+	
 	private int bossYPos = this.getHeight()/5;
 	private int bossXPos = this.getWidth()+10;
+
+	
 	private int bulletBossCollision = 0;
+	
 	private long lastBulletFire;
 	private long lastFireball;
 	private long lastFireWave;
+	private long lastHeart;
 	private final long  NEW_BOSS_FIREWAVE_DELAY = 3000;
-	private final long  NEW_BOSS_FIRE_DELAY = 6000;
+	private final long  NEW_BOSS_FIRE_DELAY = 5000;
 	private final long  NEW_BOSS_BULLET_DELAY = 2000;
+	private final long NEW_HEART_DELAY = 5000;
+	
 	protected BossBullet bossBullet;
 	protected ArrayList<BossBullet> bossBullets;
 	protected Fireball fireball;
 	protected ArrayList<Fireball> fireballs;
 	protected FireWave fireWave;
 	protected ArrayList<FireWave> fireWaves;
-
-
-
-
-
+	protected Heart heart;
+	protected ArrayList<Heart> hearts;
 
 	/**
 	 * 
@@ -76,6 +85,7 @@ public class Level4State extends Level3State{
 		bossBullets = new ArrayList<BossBullet>();
 		fireballs = new ArrayList<Fireball>();
 		fireWaves = new ArrayList<FireWave>();
+		hearts = new ArrayList<Heart>();
 		this.setNewSoundManager(newSoundMan);
 
 		try {
@@ -85,6 +95,7 @@ public class Level4State extends Level3State{
 			this.fireballImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/fireball.png"));
 			this.fireExplosionImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/fireExplo.png"));
 			this.fireWaveImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/firewave.png"));
+			this.heartImage = ImageIO.read(getClass().getResource("/rbadia/voidspace/graphics/heartContainer.png"));
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "The graphic files are either corrupt or missing.",
@@ -119,8 +130,10 @@ public class Level4State extends Level3State{
 		drawBossBigBullets();
 		fireBossBigBullet();
 		drawBossFireball();
+		drawHeartContainer();
 		fireFireballs();
 		fireFireWaves();
+		dropHeart();
 		drawFireWave();
 		drawBossHealth(g2d);
 		drawLeftBullets();
@@ -133,6 +146,7 @@ public class Level4State extends Level3State{
 		checkLeftBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
+		checkHeartMegamanCollision();
 		checkBullletAsteroid2Collisions();
 		checkBigBulletAsteroid2Collisions();
 		checkMegaManAsteroid2Collisions();
@@ -168,19 +182,20 @@ public class Level4State extends Level3State{
 	public ArrayList<BossBullet> getBossBullets()		{ return bossBullets;   	}
 	public ArrayList<Fireball> getFireball()		{ return fireballs;   	}
 	public ArrayList<FireWave> getFireWave()		{ return fireWaves;   	}
+	public ArrayList<Heart> getHearts() 			{return hearts;}
 	public NewSoundManager getNewSoundManager() { return newSoundManager; }
 
 	//Setters
 	public void setNewSoundManager(NewSoundManager newSoundManager) { this.newSoundManager = newSoundManager; }
 
-
-
-
+	//Draw Boss
 	public void drawBoss (Graphics2D g2d){
+		//Move boss to middle of screen from the right
 		if(bossXPos>this.getWidth()/2) {
 			g2d.drawImage(boss,null, bossXPos,bossYPos);
 			bossXPos-=1;
 		}else {
+			//Move boss up or down
 			if(isBossGoingUp) {
 				if(bossYPos>=1) {
 					g2d.drawImage(boss,null, this.getWidth()/2,bossYPos);
@@ -204,7 +219,7 @@ public class Level4State extends Level3State{
 	public void drawBossBullet(BossBullet bossBullet, Graphics2D g2d, ImageObserver observer) {
 		g2d.drawImage(bossBulletImage, bossBullet.x, bossBullet.y, observer);
 	}
-
+	
 	protected void drawBossBigBullets() {
 		Graphics2D g2d = getGraphics2D();
 
@@ -220,6 +235,7 @@ public class Level4State extends Level3State{
 		}
 	}
 
+	//Move bullet to the left
 	public boolean moveBossBullet(BossBullet bossBullet){
 
 		if(bossBullet.getY() - bossBullet.getSpeed() >= 0)
@@ -232,7 +248,7 @@ public class Level4State extends Level3State{
 		}
 	}
 
-
+	//Fires the bullet every few seconds
 	public void fireBossBigBullet() {
 		long currentTime = System.currentTimeMillis();
 		if(bossXPos==this.getWidth()/2) {
@@ -248,6 +264,7 @@ public class Level4State extends Level3State{
 
 	}
 
+	//Check if megaman bullet hits the boss
 	protected void checkBulletBossCollisons(Graphics2D g2d) {
 
 		GameStatus status = getGameStatus();
@@ -271,6 +288,7 @@ public class Level4State extends Level3State{
 		}
 	}
 
+	//check if the boss bullet hits megaman
 	protected void checkBossBulletMegamanCollision(Graphics2D g2d) {
 
 		GameStatus status = getGameStatus();
@@ -283,9 +301,8 @@ public class Level4State extends Level3State{
 						bossBullet.getPixelsWide(),
 						bossBullet.getPixelsTall());
 				getGraphicsManager().drawAsteroidExplosion(bulletExplosion,g2d, this);
-				// increase Boss hit count
+				// decrease megaman lives
 				status.setLivesLeft(status.getLivesLeft() - 1);
-				//randomPosition = rand.nextInt(10);
 				damage=0;
 				// remove bullet
 				bossBullets.remove(i);
@@ -299,7 +316,7 @@ public class Level4State extends Level3State{
 	public void drawFireball(Fireball fireball, Graphics2D g2d, ImageObserver observer) {
 		g2d.drawImage(fireballImage, fireball.x, fireball.y, observer);
 	}
-
+	//draw the fireball
 	protected void drawBossFireball() {
 		Graphics2D g2d = getGraphics2D();
 
@@ -315,6 +332,7 @@ public class Level4State extends Level3State{
 		}
 	}
 
+	//fires the fireball every few seconds
 	public void fireFireballs() {
 
 		long currentTime = System.currentTimeMillis();
@@ -322,7 +340,7 @@ public class Level4State extends Level3State{
 			if((currentTime - lastFireball) > NEW_BOSS_FIRE_DELAY) {
 
 				int xPos = this.getWidth()*4/5 - Fireball.WIDTH / 2;
-				int yPos = (bossYPos+boss.getHeight())/2- Fireball.HEIGHT + 4;
+				int yPos = (bossYPos+(boss.getHeight())/2)- Fireball.HEIGHT + 4;
 				Fireball  fireball = new Fireball(xPos, yPos);
 				fireballs.add(fireball);
 				this.getNewSoundManager().playFireballSound();
@@ -331,7 +349,7 @@ public class Level4State extends Level3State{
 		}
 	}
 
-
+	//moves fireball across the screen
 	public boolean moveFireball(Fireball fireball){
 
 		if(fireball.getY() - fireball.getSpeed() >= 0)
@@ -344,10 +362,12 @@ public class Level4State extends Level3State{
 		}
 	}
 
+	//draw explosion of the fireball
 	public void drawFireBallExplosion(Rectangle fireExplosion, Graphics2D g2d, ImageObserver observer) {
 		g2d.drawImage(fireExplosionImage, fireExplosion.x, fireExplosion.y, observer);
 	}
 
+	//check if the fireball hits megaman
 	protected void checkFireBallMegamanCollision(Graphics2D g2d) {
 
 		GameStatus status = getGameStatus();
@@ -359,12 +379,12 @@ public class Level4State extends Level3State{
 						fireball.y,
 						fireball.getPixelsWide(),
 						fireball.getPixelsTall());
+				//draw explosion upon impact
 				drawFireBallExplosion(fireExplosion, g2d,this);
-				// increase Boss hit count
+				// set lives to 0. GAME OVER
 				status.setLivesLeft(0);
-				//randomPosition = rand.nextInt(10);
 				damage=0;
-				// remove bullet
+				// remove fireball
 				fireballs.remove(i);
 				break;
 			}
@@ -376,6 +396,7 @@ public class Level4State extends Level3State{
 			g2d.drawImage(fireWaveImage, fireWave.x, fireWave.y, observer);
 		}
 
+		//draw firewave
 		protected void drawFireWave() {
 			Graphics2D g2d = getGraphics2D();
 
@@ -391,6 +412,7 @@ public class Level4State extends Level3State{
 			}
 		}
 
+		//shoot firewave every few seconds
 		public void fireFireWaves() {
 
 			long currentTime = System.currentTimeMillis();
@@ -407,6 +429,7 @@ public class Level4State extends Level3State{
 			}
 		}
 
+		//moves firewave across the screen
 		public boolean moveFireWave(FireWave fireWave){
 
 			if(fireWave.getY() - fireWave.getSpeed() >= 0)
@@ -419,6 +442,7 @@ public class Level4State extends Level3State{
 			}
 		}
 		
+		//check if firewave hits megaman
 		protected void checkFireWaveMegamanCollision(Graphics2D g2d) {
 
 			GameStatus status = getGameStatus();
@@ -430,20 +454,92 @@ public class Level4State extends Level3State{
 							fireWave.y,
 							fireWave.getPixelsWide(),
 							fireWave.getPixelsTall());
+					//draw explosion upon impact
 					drawFireBallExplosion(fireExplosion, g2d,this);
-					// increase Boss hit count
+					// decrease megaman lives
 					status.setLivesLeft(status.getLivesLeft() - 1);
-					//randomPosition = rand.nextInt(10);
 					damage=0;
-					// remove bullet
+					// remove firewave
 					fireWaves.remove(i);
 					break;
 				}
 			}
 		}
+		
+		
+		//HEARTS
+		
+		public void drawHeart(Heart heart, Graphics2D g2d, ImageObserver observer) {
+			g2d.drawImage(heartImage, heart.x, heart.y, observer);
+		}
 
+		//draw hearts
+		protected void drawHeartContainer() {
+			Graphics2D g2d = getGraphics2D();
 
+			for(int i=0; i<hearts.size(); i++){
+				Heart heart = hearts.get(i);
+				this.drawHeart(heart, g2d,null);
 
+				boolean remove = this.moveHeart(heart);
+				if(remove){
+					hearts.remove(i);
+					i--;
+				}
+			}
+		}
+		//drop heart if megaman has less than 3 lives, and every 25 hits to the boss
+		public void dropHeart() {
+			GameStatus status = getGameStatus();
+			long currentTime = System.currentTimeMillis();
+
+			if(currentTime - lastHeart > NEW_HEART_DELAY && bulletBossCollision%25  == 0 && status.getLivesLeft() < 3) {
+
+					int xPos = this.getWidth()/3;
+					int yPos = Heart.HEIGHT;
+					Heart  heart = new Heart(xPos, yPos);
+					hearts.add(heart);
+					lastHeart = System.currentTimeMillis();
+				}
+		}
+
+		//moves heart downward across the screen. stays on the floor
+		public boolean moveHeart(Heart heart){
+			
+			if(heart.getY() - heart.getSpeed() >= 0)
+			{
+				if(heart.getY()+heart.height < this.getHeight() - 30) {
+					heart.translate(0,heart.getSpeed());
+				return false;
+				}
+				else {
+					return false;
+				}
+			}
+			else{
+				return true;
+			}
+		}
+		
+		//check if megaman touches the heart. adds 1 life
+		protected void checkHeartMegamanCollision() {
+
+			GameStatus status = getGameStatus();
+			for(int i=0; i<hearts.size(); i++){
+				Heart heart = hearts.get(i);
+				if(megaMan.intersects(heart)){
+					// increase megaman lives
+					status.setLivesLeft(status.getLivesLeft() + 1);
+					damage=0;
+					// remove heart from screen
+					hearts.remove(i);
+					break;
+				}
+			}
+		}
+
+		
+		
 
 	@Override
 	public Platform[] newPlatforms(int n){
@@ -466,7 +562,9 @@ public class Level4State extends Level3State{
 		return bulletBossCollision > 100;
 
 	}
-public void drawBossHealth(Graphics2D g2d) {
+	
+	//draw health bar of the boss
+	public void drawBossHealth(Graphics2D g2d) {
 		String bossHealthLabel = "Boss Health: ";
 		int bossHealthValue = 100 - bulletBossCollision;
 		Integer.toString(bossHealthValue);
@@ -476,8 +574,5 @@ public void drawBossHealth(Graphics2D g2d) {
 		g2d.setPaint(Color.GREEN);
 		g2d.drawString(bossHealthString, this.getWidth()/2 - 65, 30);
 	}
-
-
-
 
 }
