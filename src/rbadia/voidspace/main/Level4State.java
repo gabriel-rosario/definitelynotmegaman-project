@@ -143,6 +143,7 @@ public class Level4State extends Level3State{
 		checkFireWaveMegamanCollision(g2d);
 		checkFireBallMegamanCollision(g2d);
 		checkBulletBossCollisons(g2d);
+		checkBigBulletBossCollisons(g2d);
 		checkBigBulletAsteroidCollisions();
 		checkLeftBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
@@ -289,6 +290,31 @@ public class Level4State extends Level3State{
 			}
 		}
 	}
+	
+	//Check big bullet hits boss
+	protected void checkBigBulletBossCollisons(Graphics2D g2d) {
+
+		GameStatus status = getGameStatus();
+		for(int i=0; i<bigBullets.size(); i++){
+			BigBullet bigBullet = bigBullets.get(i);
+			if((bigBullet.x+bigBullet.width/2>=this.getWidth()*4/5)&&((bigBullet.y+bigBullet.height/2>=bossYPos)||(bigBullet.y+bigBullet.height/2<=bossYPos+boss.getHeight()))){
+				Rectangle bulletExplosion = new Rectangle(
+						bigBullet.x,
+						bigBullet.y,
+						bigBullet.getPixelsWide(),
+						bigBullet.getPixelsTall());
+				getGraphicsManager().drawAsteroidExplosion(bulletExplosion,g2d, this);
+				// increase Boss hit count
+				bulletBossCollision+=3;
+				randomPosition = rand.nextInt(10);
+				damage=0;
+				// remove bullet
+				bigBullets.remove(i);
+				break;
+			}
+		}
+	}
+	
 
 	//check if the boss bullet hits megaman
 	protected void checkBossBulletMegamanCollision(Graphics2D g2d) {
