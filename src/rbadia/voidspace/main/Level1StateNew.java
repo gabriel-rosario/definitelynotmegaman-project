@@ -84,28 +84,6 @@ public class Level1StateNew extends Level1State {
 		g2d.drawImage(megaFireLImg, megaMan.x, megaMan.y, observer);
 	}
 	
-	@Override
-	public void doGettingReady() {
-		setCurrentState(GETTING_READY);
-		getGameLogic().drawGetReady();
-		repaint();
-		LevelLogic.delay(2000);
-		//Music starts
-		MegaManMain.audioClip.close();
-		MegaManMain.audioFile = new File("audio/MegaManMain.wav");
-		try {
-			MegaManMain.audioStream = AudioSystem.getAudioInputStream(MegaManMain.audioFile);
-			MegaManMain.audioClip.open(MegaManMain.audioStream);
-			MegaManMain.audioClip.start();
-			MegaManMain.audioClip.loop(Clip.LOOP_CONTINUOUSLY);
-		} catch (UnsupportedAudioFileException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (LineUnavailableException e1) {
-			e1.printStackTrace();
-		}
-	}
 
 	@Override
 	public void doStart() {	
