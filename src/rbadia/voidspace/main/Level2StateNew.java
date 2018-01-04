@@ -77,9 +77,11 @@ public class Level2StateNew extends Level1StateNew {
 		drawLeftBullets();
 		drawBullets();
 		drawBigBullets();
+		drawLeftBigBullets();
 		checkBullletAsteroidCollisions();
 		checkLeftBulletAsteroidCollisions();
 		checkBigBulletAsteroidCollisions();
+		checkLeftBigBulletAsteroidCollisions();
 		checkMegaManAsteroidCollisions();
 		checkAsteroidFloorCollisions();
 
